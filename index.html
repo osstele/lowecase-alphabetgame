@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alphabet Recognition Game</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body background="sky.jpeg">
+  <div class="game-container">
+    <header class="topbar">
+      <h2>Alphabet Recognition Game</h2>
+      <div class="stats">
+        <span>Score: <strong id="score">0</strong></span>
+        <span>Streak: <strong id="streak">0</strong></span>
+        <button id="muteBtn" aria-pressed="false" title="Toggle sound">🔊</button>
+      </div>
+    </header>
+
+    <p class="prompt">Click the correct letter:</p>
+
+    <div class="display-wrap">
+      <div class="letter-display" id="letterDisplay" aria-live="polite">?</div>
+      <img id="imageDisplay" class="letter-image" src="spiderman-background.jfif" alt="Letter image"/>
+    </div>
+
+    <div class="buttons" id="buttons">
+  <button class="letter-btn" data-letter="a">a</button>
+  <button class="letter-btn" data-letter="b">b</button>
+  <button class="letter-btn" data-letter="c">c</button>
+  <button class="letter-btn" data-letter="d">d</button>
+  <button class="letter-btn" data-letter="e">e</button>
+  <button class="letter-btn" data-letter="f">f</button>
+  <button class="letter-btn" data-letter="g">g</button>
+  <button class="letter-btn" data-letter="h">h</button>
+  <button class="letter-btn" data-letter="i">i</button>
+  <button class="letter-btn" data-letter="j">j</button>
+  <button class="letter-btn" data-letter="k">k</button>
+  <button class="letter-btn" data-letter="l">l</button>
+  <button class="letter-btn" data-letter="m">m</button>
+  <button class="letter-btn" data-letter="n">n</button>
+  <button class="letter-btn" data-letter="o">o</button>
+  <button class="letter-btn" data-letter="p">p</button>
+  <button class="letter-btn" data-letter="q">q</button>
+  <button class="letter-btn" data-letter="r">r</button>
+  <button class="letter-btn" data-letter="s">s</button>
+  <button class="letter-btn" data-letter="t">t</button>
+  <button class="letter-btn" data-letter="u">u</button>
+  <button class="letter-btn" data-letter="v">v</button>
+  <button class="letter-btn" data-letter="w">w</button>
+  <button class="letter-btn" data-letter="x">x</button>
+  <button class="letter-btn" data-letter="y">y</button>
+  <button class="letter-btn" data-letter="z">z</button>
+</div>
+    <p id="message" class="message" aria-live="polite"></p>
+
+    <!-- Feedback sounds -->
+    <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
+    <audio id="wrongSound"   src="wrong.mp3"   preload="auto"></audio>
+
+    <!-- Per-letter sounds (use your files exactly as named) -->
+    <audio id="ASound" src="sounds/A for apple.mp3" preload="auto"></audio>
+    <audio id="BSound" src="sounds/B FOR BALL.mp3" preload="auto"></audio>
+    <audio id="CSound" src="sounds/C FOR CAT.mp3" preload="auto"></audio>
+    <audio id="DSound" src="sounds/D for DUCK.mp3" preload="auto"></audio>
+    <audio id="ESound" src="sounds/E for elephant.mp3" preload="auto"></audio>
+    <audio id="FSound" src="sounds/F for fish.mp3" preload="auto"></audio>
+    <audio id="GSound" src="sounds/G For Girl.mp3" preload="auto"></audio>
+    <audio id="HSound" src="sounds/H FOR HOUSE.mp3" preload="auto"></audio>
+    <audio id="ISound" src="sounds/I FOR ICECREAM.mp3" preload="auto"></audio>
+    <audio id="JSound" src="sounds/J FOR JACKET.mp3" preload="auto"></audio>
+    <audio id="KSound" src="sounds/K FOR KITE.mp3" preload="auto"></audio>
+    <audio id="LSound" src="sounds/L FOR LION.mp3" preload="auto"></audio>
+    <audio id="MSound" src="sounds/M FOR Monkey.mp3" preload="auto"></audio>
+    <audio id="NSound" src="sounds/N for Narawal.mp3" preload="auto"></audio>
+    <audio id="OSound" src="sounds/O FOR OWL.mp3" preload="auto"></audio>
+    <audio id="PSound" src="sounds/P FOR PARROT.mp3" preload="auto"></audio>
+    <audio id="QSound" src="sounds/Q for queen.m4a" preload="auto"></audio>
+    <audio id="RSound" src="sounds/R FOR RABBIT.m4a" preload="auto"></audio>
+    <audio id="SSound" src="sounds/S for snake.m4a" preload="auto"></audio>
+    <audio id="TSound" src="sounds/T FOR TIGER.m4a" preload="auto"></audio>
+    <audio id="USound" src="sounds/u for umbrella.m4a" preload="auto"></audio>
+    <audio id="VSound" src="sounds/V VOR VILON.m4a" preload="auto"></audio>
+    <audio id="WSound" src="sounds/W FOR WATCH.m4a" preload="auto"></audio>
+    <audio id="XSound" src="sounds/X FOR XYLOPHONE.m4a" preload="auto"></audio>
+    <audio id="YSound" src="sounds/y for yatch.mp3" preload="auto"></audio>
+    <audio id="ZSound" src="sounds/z for zebra.mp3" preload="auto"></audio>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
