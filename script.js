@@ -174,3 +174,6 @@ muteBtn.addEventListener("click", () => setMuted(!muted));
 // Start
 setMuted(false);
 nextRound();
+document.addEventListener("DOMContentLoaded", () => {
+  pickRandomLetter();
+});
