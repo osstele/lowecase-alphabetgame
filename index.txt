@@ -21,7 +21,7 @@
 
     <div class="display-wrap">
       <div class="letter-display" id="letterDisplay" aria-live="polite">?</div>
-      <img id="imageDisplay" class="letter-image" src="spiderman-background.jfif" alt="Letter image"/>
+      #<!img id="imageDisplay" class="letter-image" src="spiderman-background.jfif" alt="Letter image"/!>#
     </div>
 
     <div class="buttons" id="buttons">
@@ -89,4 +89,5 @@
 
   <script src="script.js"></script>
 </body>
+
 </html>
