@@ -1,179 +1,151 @@
-// Utility
-const $ = (sel) => document.querySelector(sel);
+// ===== Utilities
+const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+// Use LOWERCASE letters to match your HTML buttons' data-letter="a"
+const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-const letterDisplay = $("#letterDisplay");
-const imageDisplay  = $("#imageDisplay");
-const msg           = $("#message");
-const scoreEl       = $("#score");
-const streakEl      = $("#streak");
-const muteBtn       = $("#muteBtn");
+// ===== DOM refs
+const letterDisplay = $('#letterDisplay');
+const msg           = $('#message');
+const scoreEl       = $('#score');
+const streakEl      = $('#streak');
+const muteBtn       = $('#muteBtn');
+const correctSound  = $('#correctSound');
+const wrongSound    = $('#wrongSound');
 
-const correctSound  = $("#correctSound");
-const wrongSound    = $("#wrongSound");
-
-// Map letters to <audio> element IDs you already included
+// Map letter -> per-letter audio element (your IDs are A/B/C...Sound)
 const letterAudio = Object.fromEntries(
-  letters.map((L) => [L, document.getElementById(`${L}Sound`)])
+  letters.map(l => [l, document.getElementById(`${l.toUpperCase()}Sound`)])
 );
 
-// Optional: If you have per-letter images, set them here; otherwise we keep your default.
-const letterImages = {
-  // Example:
-  // A: "images/a-apple.jpg",
-  // B: "images/b-ball.jpg",
-  // ...
-};
-
-// State
-let currentLetter = "?";
+// ===== State
+let currentLetter = '?';
 let score = 0;
 let streak = 0;
 let muted = false;
 let audioUnlocked = false;
 
-// iOS/Chrome mobile need a user gesture before audio can play reliably.
+// ===== Audio helpers
 function unlockAudioOnFirstTap() {
   if (audioUnlocked) return;
-  const all = [correctSound, wrongSound, ...Object.values(letterAudio)];
-  all.forEach((a) => {
+  const all = [correctSound, wrongSound, ...Object.values(letterAudio).filter(Boolean)];
+  all.forEach(a => {
     try { a.muted = true; a.play().catch(()=>{}); a.pause(); a.currentTime = 0; } catch {}
   });
   audioUnlocked = true;
-  // Unmute back to current setting
-  setTimeout(() => {
-    all.forEach((a)=> a.muted = muted);
-  }, 0);
+  setTimeout(() => all.forEach(a => { if (a) a.muted = muted; }), 0);
 }
 
 function setMuted(flag) {
   muted = flag;
-  const all = [correctSound, wrongSound, ...Object.values(letterAudio)];
-  all.forEach((a) => (a.muted = muted));
-  muteBtn.textContent = muted ? "🔇" : "🔊";
-  muteBtn.setAttribute("aria-pressed", String(muted));
+  const all = [correctSound, wrongSound, ...Object.values(letterAudio).filter(Boolean)];
+  all.forEach(a => { if (a) a.muted = muted; });
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-pressed', String(muted));
 }
 
+function safePlay(a) {
+  if (!a || muted) return;
+  a.currentTime = 0;
+  a.play().catch(()=>{});
+}
+
+// ===== Game logic
 function randLetter(exclude) {
-  let pick;
-  do {
-    pick = letters[Math.floor(Math.random() * letters.length)];
-  } while (pick === exclude);
-  return pick;
+  let p;
+  do { p = letters[Math.floor(Math.random() * letters.length)]; }
+  while (p === exclude);
+  return p;
 }
 
-function showLetter(L) {
-  currentLetter = l;
-  letterDisplay.textContent = l;
-
-  // Update image if available, else keep current
-  const img = letterImages[L];
-  if (img) {
-    imageDisplay.src = img;
-    imageDisplay.alt = `Image for ${L}`;
-  }
+function showLetter(letter) {
+  currentLetter = letter;               // << fixed var name
+  letterDisplay.textContent = letter;   // display lowercase letter
+  msg.textContent = '';                 // clear hint
 }
 
-function setMessage(text, type) {
+function setMessage(text, kind) {
   msg.textContent = text;
-  msg.classList.remove("ok", "bad");
-  if (type === "ok") msg.classList.add("ok");
-  if (type === "bad") msg.classList.add("bad");
+  msg.classList.remove('ok', 'bad');
+  if (kind === 'ok')  msg.classList.add('ok');
+  if (kind === 'bad') msg.classList.add('bad');
 }
 
 function resetButtonStyles() {
-  $$(".letter-btn").forEach((b) => b.classList.remove("correct", "wrong"));
+  $$('.letter-btn').forEach(b => b.classList.remove('correct', 'wrong'));
 }
 
 async function playSequence(isCorrect, letter) {
-  const first = isCorrect ? correctSound : wrongSound;
-  const second = isCorrect ? letterAudio[letter] : null;
+  return new Promise(resolve => {
+    const first = isCorrect ? correctSound : wrongSound;
+    const second = isCorrect ? letterAudio[letter] : null;
 
-  // Some browsers ignore await on play; we use events
-  return new Promise((resolve) => {
     const playSecond = () => {
-      if (second) {
-        second.currentTime = 0;
-        second.play().catch(()=>{}); // best-effort
-        // No need to wait for finishing
-      }
+      if (second) safePlay(second);
       resolve();
     };
 
-    first.currentTime = 0;
-    first.play().then(() => {
-      first.onended = () => {
-        first.onended = null;
-        playSecond();
-      };
-    }).catch(() => {
-      // If first can't play, try second or resolve
-      playSecond();
-    });
+    safePlay(first);
+    if (!first) return resolve();
+
+    // best-effort chain
+    if (first) {
+      first.onended = () => { first.onended = null; playSecond(); };
+      // If autoplay policy blocks it, still resolve shortly
+      setTimeout(() => { if (first.paused) playSecond(); }, 300);
+    }
   });
 }
 
 function nextRound() {
   resetButtonStyles();
-  const l = randLetter(currentLetter);
-  showLetter(l);
-  setMessage("", "");
+  showLetter(randLetter(currentLetter));
 }
 
 async function handleGuess(guessBtn) {
   unlockAudioOnFirstTap();
 
-  const guess = guessBtn.dataset.letter;
+  const guess = (guessBtn.dataset.letter || '').toLowerCase();
   const isCorrect = guess === currentLetter;
 
   if (isCorrect) {
-    score++;
-    streak++;
-    guessBtn.classList.add("correct");
-    setMessage(`Great! ${currentLetter} is correct.`, "ok");
+    score += 1;
+    streak += 1;
+    guessBtn.classList.add('correct');
+    setMessage(`Great! ${currentLetter} is correct.`, 'ok');
   } else {
     streak = 0;
-    guessBtn.classList.add("wrong");
-    setMessage(`Oops! Try again — looking for ${currentLetter}.`, "bad");
+    guessBtn.classList.add('wrong');
+    setMessage(`Oops! Try again — looking for ${currentLetter}.`, 'bad');
   }
 
-  scoreEl.textContent = String(score);
+  scoreEl.textContent  = String(score);
   streakEl.textContent = String(streak);
 
   await playSequence(isCorrect, currentLetter);
 
-  if (isCorrect) {
-    setTimeout(nextRound, 500);
-  } else {
-    // keep the same letter; remove red border after a moment
-    setTimeout(() => guessBtn.classList.remove("wrong"), 500);
-  }
+  if (isCorrect) setTimeout(nextRound, 400);
+  else setTimeout(() => guessBtn.classList.remove('wrong'), 400);
 }
 
-// Wire up buttons
-$("#buttons").addEventListener("click", (e) => {
-  const btn = e.target.closest(".letter-btn");
-  if (!btn) return;
-  handleGuess(btn);
+// ===== Wiring
+$('#buttons').addEventListener('click', (e) => {
+  const btn = e.target.closest('.letter-btn');
+  if (btn) handleGuess(btn);
 });
 
-// Keyboard support (A–Z)
-document.addEventListener("keydown", (e) => {
-  const key = e.key.toUpperCase();
-  if (letters.includes(key)) {
-    const btn = document.querySelector(`.letter-btn[data-letter="${key}"]`);
-    if (btn) handleGuess(btn);
-  }
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (!letters.includes(k)) return;
+  const btn = document.querySelector(`.letter-btn[data-letter="${k}"]`);
+  if (btn) handleGuess(btn);
 });
 
-// Mute toggle
-muteBtn.addEventListener("click", () => setMuted(!muted));
+muteBtn.addEventListener('click', () => setMuted(!muted));
 
-// Start
-setMuted(false);
-nextRound();
-document.addEventListener("DOMContentLoaded", () => {
-  pickRandomLetter();
+// ===== Start
+document.addEventListener('DOMContentLoaded', () => {
+  setMuted(false);
+  nextRound();            // no pickRandomLetter(); this is the start
 });
